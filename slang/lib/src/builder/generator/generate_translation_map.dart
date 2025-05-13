@@ -60,6 +60,8 @@ String generateTranslationMap(
   return buffer.toString();
 }
 
+final Set<ListNode> _seenParents = {};
+
 void _generateTranslationMap({
   required StringBuffer buffer,
   required Iterable<Node> flatList,
@@ -67,6 +69,15 @@ void _generateTranslationMap({
   required String language,
 }) {
   for (final curr in flatList) {
+    if (curr.parent case ListNode listNode) {
+      final childNodes = listNode.entries.whereType<StringTextNode>().toList();
+      !_seenParents.contains(listNode)
+          ? buffer.writeln(
+              '\t\t\t\'${listNode.path}\' => <${listNode.genericType}>[${childNodes.map((e) => getStringLiteral(e.content, e.links.length, config.obfuscation)).join(', ')}],')
+          : null;
+      _seenParents.add(listNode);
+    }
+
     if (curr is StringTextNode) {
       final translationOverrides = config.translationOverrides
           ? 'TranslationOverrides.string(_root.\$meta, \'${curr.path}\', ${_toParameterMap(curr.params)}) ?? '

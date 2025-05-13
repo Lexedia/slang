@@ -65,6 +65,11 @@ class I18nData {
       ContextNode contextNode => contextNode.entries.entries
           .map((e) => '(${e.key}) {${e.value.raw.digest(this)}}')
           .join(' '),
+      ListNode listNode => listNode.entries
+          .map((e) => e is StringTextNode
+              ? '${e.raw.digest(this)}'
+              : '${e.runtimeType}')
+          .join(', '),
       _ =>
         throw 'Unsupported node type for documentation: ${foundNode.runtimeType}',
     };
