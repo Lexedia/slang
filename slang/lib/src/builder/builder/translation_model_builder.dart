@@ -200,16 +200,28 @@ class TranslationModelBuilder {
                 paramSet.add(linkedNode.paramName);
                 paramTypeMap[linkedNode.paramName] =
                     linkedNode.context.enumName;
-              }
 
-              // lookup links of children
-              for (final element in textNodes) {
-                for (final child in element.links) {
+                // lookup links of children
+                for (final element in textNodes) {
+                  for (final child in element.links) {
+                    if (!visitedLinks.contains(child)) {
+                      pathQueue.add(child);
+                    }
+                  }
+                }
+              }
+            } else if (linkedNode is ListNode) {
+              linkedNode.values.whereType<TextNode>().forEach((node) {
+                paramSet.addAll(node.params);
+                paramTypeMap.addAll(node.paramTypeMap);
+
+                // lookup links
+                for (final child in node.links) {
                   if (!visitedLinks.contains(child)) {
                     pathQueue.add(child);
                   }
                 }
-              }
+              });
             } else {
               throw '"$key" is linked to "$currLink" which is a ${linkedNode.runtimeType} (must be $TextNode or $ObjectNode).';
             }
@@ -394,6 +406,7 @@ Map<String, Node> _parseMapNode({
           parent: node,
           children: children.values,
         );
+        leavesMap[currPath] = node;
         resultNodeTree[key] = node;
       } else {
         _DetectionResult? detectedType =

@@ -164,7 +164,7 @@ class ObjectNode extends IterableNode {
   }
 }
 
-class ListNode extends IterableNode {
+class ListNode extends IterableNode implements LeafNode {
   final List<Node> entries;
 
   @override
@@ -823,16 +823,17 @@ _ParseLinksResult _parseLinks({
   final links = <String>{};
   final parsedContent = input.replaceAllMapped(RegexUtils.linkedRegex, (match) {
     final linkedPath = (match.group(1) ?? match.group(2))!;
+    final op = match[3]?.replaceAll(RegExp(r'\$|\{|\}'), '');
     links.add(linkedPath);
 
     if (linkParamMap == null) {
       // assume no parameters
-      return '\${_root.$linkedPath}';
+      return '\${_root.$linkedPath${op ?? ''}}';
     }
 
     final linkedParams = linkParamMap[linkedPath]!;
     if (linkedParams.isEmpty) {
-      return '\${_root.$linkedPath}';
+      return '\${_root.$linkedPath${op ?? ''}}';
     }
 
     final parameterString =
